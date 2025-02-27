@@ -37,12 +37,19 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
         }
 
         table.dataTable {
             width: 100% !important;
             font-size: 0.9rem;
+            table-layout: auto; /* Changed from fixed to auto */
+        }
+
+        /* Ensure column widths are correctly distributed */
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            white-space: normal; /* Allow text to wrap */
+            word-break: break-word; /* Break words if needed */
         }
 
         /* DataTables specific adjustments */
@@ -110,9 +117,54 @@
             padding: 0 10px;
             margin: 0 2px;
         }
-
-        /* Mobile-first responsive design */
+        
+        /* Fix for column display on small screens */
         @media (max-width: 768px) {
+            table.dataTable thead th, 
+            table.dataTable tbody td {
+                min-width: 80px; /* Ensure minimum width */
+            }
+            
+            /* Force DataTables to use responsive mode on small screens */
+            table.dataTable.dtr-inline.collapsed > tbody > tr > td, 
+            table.dataTable.dtr-inline.collapsed > tbody > tr > th {
+                position: relative;
+                padding-left: 30px;
+            }
+            
+            /* Control column positioning */
+            table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child,
+            table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child {
+                padding-left: 30px;
+            }
+            
+            /* Enhanced styles for child rows */
+            table.dataTable.dtr-inline.collapsed > tbody > tr.child {
+                padding: 0 !important;
+            }
+            
+            table.dataTable > tbody > tr.child span.dtr-title {
+                min-width: 30%; /* Give title consistent width */
+                display: inline-block;
+                vertical-align: top;
+                padding-right: 8px;
+            }
+            
+            table.dataTable > tbody > tr.child span.dtr-data {
+                display: inline-block;
+                width: 65%;
+                vertical-align: top;
+            }
+            
+            /* Adjust column visibility for mobile */
+            /* On very small screens, only show image and title columns */
+            @media (max-width: 480px) {
+                table.dataTable:not(.collapsed) th:nth-child(n+3),
+                table.dataTable:not(.collapsed) td:nth-child(n+3) {
+                    display: none;
+                }
+            }
+            
             body {
                 padding: 8px;
             }
@@ -138,12 +190,6 @@
                 max-width: 70px;
             }
 
-            /* Improve responsive cells appearance */
-            .dtr-data {
-                word-break: break-word;
-                padding: 5px 0;
-            }
-
             /* Styling for expanded details */
             table.dataTable > tbody > tr.child ul.dtr-details {
                 width: 100%;
@@ -153,16 +199,12 @@
             table.dataTable > tbody > tr.child ul.dtr-details > li {
                 padding: 8px 0;
                 border-bottom: 1px solid #efefef;
+                display: flex;
+                flex-wrap: wrap;
             }
 
             table.dataTable > tbody > tr.child ul.dtr-details > li:last-child {
                 border-bottom: none;
-            }
-
-            table.dataTable > tbody > tr.child span.dtr-title {
-                font-weight: bold;
-                margin-bottom: 5px;
-                display: block;
             }
 
             /* Pagination controls */
@@ -277,6 +319,8 @@
                         searching: true,
                         ordering: true,
                         pageLength: 8, // Reduced for mobile
+                        scrollX: false, // Disable horizontal scrolling - use responsive instead
+                        autoWidth: false, // Don't auto-calculate width
                         language: {
                             searchPlaceholder: "Search...",
                             search: "",
@@ -289,40 +333,38 @@
                         },
                         responsive: {
                             details: {
+                                display: $.fn.dataTable.Responsive.display.childRowImmediate,
                                 type: 'column',
-                                target: 'tr',
-                                renderer: function(api, rowIdx, columns) {
-                                    let data = '';
-                                    
-                                    // Create a responsive layout that's more touch-friendly
-                                    data += '<ul class="dtr-details">';
-                                    for (let i = 0; i < columns.length; i++) {
-                                        if (columns[i].hidden) {
-                                            data += '<li>' + 
-                                                '<span class="dtr-title">' + columns[i].title + '</span> ' +
-                                                '<span class="dtr-data">' + columns[i].data + '</span>' +
-                                                '</li>';
-                                        }
-                                    }
-                                    data += '</ul>';
-                                    
-                                    return data ?
-                                        $('<div/>')
-                                            .css({
-                                                padding: '8px',
-                                                'margin-top': '5px'
-                                            })
-                                            .append(data) :
-                                        false;
-                                }
+                                target: 0
                             }
                         },
                         columnDefs: [
-                            { className: 'control', orderable: false, targets: 0 },
-                            { responsivePriority: 1, targets: [0, 1] },
-                            { responsivePriority: 2, targets: 2 },
-                            { responsivePriority: 3, targets: 3 },
-                            { responsivePriority: 4, targets: 4 }
+                            { 
+                                className: 'control',
+                                orderable: false,
+                                targets: 0,
+                                width: "80px"
+                            },
+                            { 
+                                responsivePriority: 1,
+                                targets: 1, 
+                                width: "40%" 
+                            },
+                            { 
+                                responsivePriority: 2,
+                                targets: 2, 
+                                width: "15%" 
+                            },
+                            { 
+                                responsivePriority: 3,
+                                targets: 3, 
+                                width: "20%" 
+                            },
+                            { 
+                                responsivePriority: 4,
+                                targets: 4, 
+                                width: "15%" 
+                            }
                         ],
                         dom: '<"top"lf>rt<"bottom"ip><"clear">',
                         drawCallback: function(settings) {
@@ -331,8 +373,14 @@
                             // Make pagination more touch-friendly
                             $('.paginate_button').css('cursor', 'pointer');
                             
-                            // Ensure proper sizing after draw
-                            adjustForMobile();
+                            // Check viewport width
+                            const viewportWidth = $(window).width();
+                            
+                            // Force responsive behavior on small screens
+                            if (viewportWidth < 768) {
+                                // Make sure all columns are properly sized
+                                table.columns.adjust().responsive.recalc();
+                            }
                         }
                     });
 
@@ -363,7 +411,7 @@
                     const tr = $('<tr></tr>');
 
                     // Image column with lazy loading
-                    const tdImage = $('<td></td>');
+                    const tdImage = $('<td></td>').css('text-align', 'center');
                     const img = $('<img>')
                         .attr('src', '') // Set empty initially
                         .attr('data-src', row.img_sources) // Store actual image URL

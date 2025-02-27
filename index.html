@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sortable Table from JSON</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            cursor: pointer;
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h2>Sortable Table from JSON</h2>
+    <table id="data-table">
+        <thead>
+            <tr id="table-head"></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function() {
+            try {
+                const response = await fetch('kenbiya_tokyo_data.json');
+                const data = await response.json();
+                
+            ementById("table-body");
+                
+                // Create table headers
+                const columns = Object.keys(data[0]);
+                columns.forEach(column => {
+                    const th = document.createElement("th");
+                    th.t    if (data.length === 0) return;
+                const tableHead = document.getElementById("table-head");
+                const tableBody = document.getElextContent = column;
+                    th.setAttribute("data-sort-method", "string");
+                    tableHead.appendChild(th);
+                });
+
+                // Populate table rows
+                data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    columns.forEach(column => {
+                        const td = document.createElement("td");
+                        td.textContent = row[column];
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+                
+                // Make table sortable
+                new Tablesort(document.getElementById('data-table'));
+            } catch (error) {
+                console.error("Error loading JSON data:", error);
+            }
+        });
+    </script>
+</body>
+</html>

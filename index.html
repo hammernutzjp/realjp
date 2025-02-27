@@ -47,9 +47,10 @@
                 font-weight: bold;
             }
 
-            /* Hide images on mobile devices */
+            /* Adjust image size for mobile */
             img {
-                display: none; /* Prevent image loading on mobile */
+                max-width: 80px;
+                height: auto;
             }
         }
 
@@ -153,14 +154,12 @@
 
             // Lazy load images for visible rows
             function lazyLoadImages() {
-                if (window.innerWidth > 768) { // Only load images on screens larger than 768px
-                    $('.lazy-img').each(function() {
-                        const img = $(this);
-                        if (!img.attr('src') || img.attr('src') === '') {
-                            img.attr('src', img.attr('data-src')).css('opacity', 1);
-                        }
-                    });
-                }
+                $('.lazy-img').each(function() {
+                    const img = $(this);
+                    if (!img.attr('src') || img.attr('src') === '') {
+                        img.attr('src', img.attr('data-src')).css('opacity', 1);
+                    }
+                });
             }
         });
     </script>

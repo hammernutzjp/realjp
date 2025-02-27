@@ -119,15 +119,33 @@
                 dataToRender.forEach(row => {
                     const tr = $('<tr></tr>');
 
-                    // Image column with lazy loading
+                    // Image column with lazy loading using <picture> element
                     const tdImage = $('<td></td>');
+                    const picture = $('<picture></picture>'); // Create picture element
+                    
+                    // Add source for larger screens (min-width: 1000px)
+                    const sourceLarge = $('<source>')
+                        .attr('media', '(min-width: 1000px)')
+                        .attr('srcset', row.img_sources); // Get image URL from JSON
+                    picture.append(sourceLarge);
+
+                    // Add source for smaller screens (max-width: 999px)
+                    const sourceSmall = $('<source>')
+                        .attr('media', '(max-width: 999px)')
+                        .attr('srcset', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==') // Base64 encoded placeholder
+                        .attr('sizes', '100%'); // Ensure it takes 100% of the container width
+                    picture.append(sourceSmall);
+
+                    // Default image (fallback for browsers that don't support <picture>)
                     const img = $('<img>')
                         .attr('src', '') // Set empty initially
-                        .attr('data-src', row.img_sources) // Store actual image URL
+                        .attr('data-src', row.img_sources) // Store actual image URL for large screens
                         .attr('alt', 'Property Image')
                         .attr('loading', 'lazy') // Native lazy loading
                         .addClass('lazy-img'); // Class for lazy loading
-                    tdImage.append(img);
+                    
+                    picture.append(img);
+                    tdImage.append(picture);
                     tr.append(tdImage);
 
                     // Description column with link

@@ -47,9 +47,9 @@
                 font-weight: bold;
             }
 
-            /* Prevent images from loading on smartphones */
+            /* Hide images on mobile devices */
             img {
-                display: none; /* Hide images on small screens */
+                display: none; /* Prevent image loading on mobile */
             }
         }
 
@@ -93,7 +93,7 @@
                         paging: true,
                         searching: true,
                         ordering: true,
-                        pageLength: 10, // Set the default number of rows per page
+                        pageLength: 25, // Set the default number of rows per page
                         language: {
                             searchPlaceholder: "Search..."
                         },

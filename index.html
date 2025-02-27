@@ -85,50 +85,22 @@
             text-decoration: underline;
         }
 
-        /* Hide image column on mobile devices */
-        @media (max-width: 768px) {
-            /* Hide the image column header and cells */
-            table.dataTable thead th:first-child,
-            table.dataTable tbody td:first-child {
-                display: none !important;
-            }
-            
-            /* Adjust other columns after hiding the first one */
-            table.dataTable thead th:nth-child(2),
-            table.dataTable tbody td:nth-child(2) {
-                padding-left: 8px !important;
-            }
-            
-            /* Adjust responsive collapsed view to not try to show image column in details */
-            table.dataTable.dtr-inline.collapsed > tbody > tr > td:nth-child(2):before,
-            table.dataTable.dtr-inline.collapsed > tbody > tr > th:nth-child(2):before {
-                top: 50%;
-                left: 4px;
-                height: 16px;
-                width: 16px;
-                line-height: 16px;
-                border-radius: 8px;
-                transform: translateY(-50%);
-            }
-            
-            /* Adjust DataTables responsive behavior */
-            .dtr-data {
-                word-break: break-word;
-                padding: 5px 0;
-            }
-            
-            /* Make the title column the responsive control column on mobile */
-            table.dataTable.dtr-inline.collapsed > tbody > tr > td:nth-child(2),
-            table.dataTable.dtr-inline.collapsed > tbody > tr > th:nth-child(2) {
-                position: relative;
-                padding-left: 30px;
-            }
-        }
-
         /* Responsive overrides */
         @media (max-width: 768px) {
-            .dataTables_wrapper .dataTables_length {
-                margin-bottom: 10px;
+            /* Hide the first column (画像) on mobile */
+            .dataTable th:first-child,
+            .dataTable td:first-child {
+                display: none;
+            }
+
+            /* Prevent images from loading on mobile */
+            .lazy-img {
+                display: none !important;
+            }
+
+            /* Adjust image size for mobile */
+            img {
+                display: none !important;
             }
 
             /* Make columns display better on mobile */
@@ -136,11 +108,6 @@
             table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
                 top: 50%;
                 transform: translateY(-50%);
-            }
-
-            /* Adjust image size for mobile */
-            img {
-                max-width: 80px;
             }
 
             /* Improve responsive cells appearance */
@@ -182,7 +149,7 @@
     <table id="data-table" class="display responsive nowrap">
         <thead>
             <tr>
-                <th data-priority="1" class="image-column">画像</th>
+                <th data-priority="1">画像</th>
                 <th data-priority="1">タイトル / 住所／交通</th>
                 <th data-priority="2">価格 / 利回り</th>
                 <th data-priority="3">建物/専有面積 / 土地面積</th>
@@ -194,9 +161,10 @@
 
     <script>
         $(document).ready(function() {
-            // Check if device is mobile
-            const isMobile = window.matchMedia("(max-width: 768px)").matches;
-            
+            // Check if touch device or smartphone
+            const isTouchDevice = 'ontouchstart' in document.documentElement;
+            const isMobile = window.innerWidth <= 768;
+
             let data = [];
 
             // Handle orientation change for better mobile experience
@@ -216,11 +184,11 @@
                     populateTable(data);
 
                     // Initialize DataTable with responsive feature
-                    const tableOptions = {
+                    const table = $('#data-table').DataTable({
                         paging: true,
                         searching: true,
                         ordering: true,
-                        pageLength: 10,
+                        pageLength: 10, // Reduced for mobile
                         language: {
                             searchPlaceholder: "Search...",
                             search: "",
@@ -231,49 +199,35 @@
                         },
                         responsive: {
                             details: {
-                                type: isMobile ? 'column' : 'inline',
-                                target: isMobile ? 'tr' : 'td:not(:first-child)'
+                                type: 'column',
+                                target: 'tr'
                             }
                         },
                         columnDefs: [
-                            { 
-                                responsivePriority: 1, 
-                                targets: [isMobile ? 1 : 0, isMobile ? 0 : 1] 
-                            },
+                            { className: 'control', orderable: false, targets: 0 },
+                            { responsivePriority: 1, targets: [0, 1] },
                             { responsivePriority: 2, targets: 2 },
                             { responsivePriority: 3, targets: 3 },
-                            { responsivePriority: 4, targets: 4 },
-                            // Hide image column on mobile
-                            {
-                                targets: 0,
-                                visible: !isMobile,
-                                className: 'image-column'
-                            }
+                            { responsivePriority: 4, targets: 4 }
                         ],
                         dom: '<"top"lf>rt<"bottom"ip><"clear">',
                         drawCallback: function(settings) {
-                            if (!isMobile) {
-                                lazyLoadImages();
-                            }
+                            lazyLoadImages();
                         }
-                    };
-
-                    const table = $('#data-table').DataTable(tableOptions);
+                    });
 
                     // Reapply lazy loading after table updates (search, paginate, etc.)
-                    if (!isMobile) {
-                        table.on('draw', function() {
-                            lazyLoadImages();
-                        });
-
-                        // Handle responsive details open/close
-                        table.on('responsive-display', function() {
-                            lazyLoadImages();
-                        });
-
-                        // Initial lazy load trigger
+                    table.on('draw', function() {
                         lazyLoadImages();
-                    }
+                    });
+
+                    // Handle responsive details open/close
+                    table.on('responsive-display', function() {
+                        lazyLoadImages();
+                    });
+
+                    // Initial lazy load trigger
+                    lazyLoadImages();
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
 
@@ -285,8 +239,8 @@
                 dataToRender.forEach(row => {
                     const tr = $('<tr></tr>');
 
-                    // Image column with lazy loading - only create for desktop
-                    const tdImage = $('<td class="image-column"></td>');
+                    // Image column with lazy loading (only if not on mobile)
+                    const tdImage = $('<td></td>');
                     if (!isMobile) {
                         const img = $('<img>')
                             .attr('src', '') // Set empty initially
@@ -323,8 +277,9 @@
                 });
             }
 
-            // Lazy load images for visible rows - only called on desktop
+            // Lazy load images for visible rows
             function lazyLoadImages() {
+                if (isMobile) return; // Skip lazy loading on mobile devices
                 $('.lazy-img').each(function() {
                     const img = $(this);
                     if (!img.attr('src') || img.attr('src') === '') {

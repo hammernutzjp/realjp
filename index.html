@@ -19,37 +19,25 @@
 
         body {
             margin: 0;
-            padding: 10px;
+            padding: 15px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.4;
-            -webkit-text-size-adjust: 100%;
-            touch-action: manipulation;
+            font-size: 16px;
+            line-height: 1.5;
         }
 
         h2 {
             margin-top: 0;
             text-align: center;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         table.dataTable {
             width: 100% !important;
-            font-size: 0.9rem;
-            table-layout: auto; /* Changed from fixed to auto */
-        }
-
-        /* Ensure column widths are correctly distributed */
-        table.dataTable thead th,
-        table.dataTable tbody td {
-            white-space: normal; /* Allow text to wrap */
-            word-break: break-word; /* Break words if needed */
         }
 
         /* DataTables specific adjustments */
@@ -60,14 +48,12 @@
         }
 
         .dataTables_wrapper .dataTables_filter input {
-            width: 90%;
+            width: 80%;
             max-width: 300px;
             margin-left: 0;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 4px;
             border: 1px solid #ddd;
-            font-size: 16px; /* Prevents iOS zoom on focus */
-            -webkit-appearance: none; /* Removes iOS default styling */
         }
 
         .dataTables_wrapper .dataTables_length,
@@ -76,14 +62,6 @@
             width: 100%;
             float: none;
             padding: 10px 0;
-            font-size: 0.9rem;
-        }
-
-        .dataTables_wrapper .dataTables_length select {
-            padding: 5px;
-            font-size: 16px; /* Prevents iOS zoom on focus */
-            height: 36px;
-            border-radius: 5px;
         }
 
         /* Image styling */
@@ -101,163 +79,100 @@
             color: #0066cc;
             text-decoration: none;
             word-break: break-word;
-            display: inline-block;
-            padding: 2px 0;
         }
 
         a:hover {
             text-decoration: underline;
         }
 
-        /* Better tap targets for mobile */
-        .dataTables_paginate .paginate_button {
-            min-width: 44px;
-            min-height: 44px;
-            line-height: 44px;
-            padding: 0 10px;
-            margin: 0 2px;
-        }
-        
-        /* Fix for column display on small screens */
+        /* Hide image column on mobile devices */
         @media (max-width: 768px) {
-            table.dataTable thead th, 
-            table.dataTable tbody td {
-                min-width: 80px; /* Ensure minimum width */
+            /* Hide the image column header and cells */
+            table.dataTable thead th:first-child,
+            table.dataTable tbody td:first-child {
+                display: none !important;
             }
             
-            /* Force DataTables to use responsive mode on small screens */
-            table.dataTable.dtr-inline.collapsed > tbody > tr > td, 
-            table.dataTable.dtr-inline.collapsed > tbody > tr > th {
+            /* Adjust other columns after hiding the first one */
+            table.dataTable thead th:nth-child(2),
+            table.dataTable tbody td:nth-child(2) {
+                padding-left: 8px !important;
+            }
+            
+            /* Adjust responsive collapsed view to not try to show image column in details */
+            table.dataTable.dtr-inline.collapsed > tbody > tr > td:nth-child(2):before,
+            table.dataTable.dtr-inline.collapsed > tbody > tr > th:nth-child(2):before {
+                top: 50%;
+                left: 4px;
+                height: 16px;
+                width: 16px;
+                line-height: 16px;
+                border-radius: 8px;
+                transform: translateY(-50%);
+            }
+            
+            /* Adjust DataTables responsive behavior */
+            .dtr-data {
+                word-break: break-word;
+                padding: 5px 0;
+            }
+            
+            /* Make the title column the responsive control column on mobile */
+            table.dataTable.dtr-inline.collapsed > tbody > tr > td:nth-child(2),
+            table.dataTable.dtr-inline.collapsed > tbody > tr > th:nth-child(2) {
                 position: relative;
                 padding-left: 30px;
             }
-            
-            /* Control column positioning */
-            table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child,
-            table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child {
-                padding-left: 30px;
-            }
-            
-            /* Enhanced styles for child rows */
-            table.dataTable.dtr-inline.collapsed > tbody > tr.child {
-                padding: 0 !important;
-            }
-            
-            table.dataTable > tbody > tr.child span.dtr-title {
-                min-width: 30%; /* Give title consistent width */
-                display: inline-block;
-                vertical-align: top;
-                padding-right: 8px;
-            }
-            
-            table.dataTable > tbody > tr.child span.dtr-data {
-                display: inline-block;
-                width: 65%;
-                vertical-align: top;
-            }
-            
-            /* Adjust column visibility for mobile */
-            /* On very small screens, only show image and title columns */
-            @media (max-width: 480px) {
-                table.dataTable:not(.collapsed) th:nth-child(n+3),
-                table.dataTable:not(.collapsed) td:nth-child(n+3) {
-                    display: none;
-                }
-            }
-            
-            body {
-                padding: 8px;
+        }
+
+        /* Responsive overrides */
+        @media (max-width: 768px) {
+            .dataTables_wrapper .dataTables_length {
+                margin-bottom: 10px;
             }
 
-            table.dataTable > thead > tr > th,
-            table.dataTable > tbody > tr > td {
-                padding: 8px 5px;
-            }
-
-            /* Improve tap target sizes for mobile */
+            /* Make columns display better on mobile */
             table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child:before,
             table.dataTable.dtr-inline.collapsed > tbody > tr > th:first-child:before {
                 top: 50%;
                 transform: translateY(-50%);
-                width: 22px;
-                height: 22px;
-                line-height: 22px;
-                border-radius: 11px;
             }
 
             /* Adjust image size for mobile */
             img {
-                max-width: 70px;
+                max-width: 80px;
+            }
+
+            /* Improve responsive cells appearance */
+            .dtr-data {
+                word-break: break-word;
+                padding: 5px 0;
             }
 
             /* Styling for expanded details */
             table.dataTable > tbody > tr.child ul.dtr-details {
                 width: 100%;
-                padding: 5px;
             }
 
             table.dataTable > tbody > tr.child ul.dtr-details > li {
-                padding: 8px 0;
+                padding: 0.75em 0;
                 border-bottom: 1px solid #efefef;
-                display: flex;
-                flex-wrap: wrap;
             }
 
             table.dataTable > tbody > tr.child ul.dtr-details > li:last-child {
                 border-bottom: none;
             }
 
-            /* Pagination controls */
+            table.dataTable > tbody > tr.child span.dtr-title {
+                font-weight: bold;
+                margin-bottom: 5px;
+                display: block;
+            }
+
             .dataTables_paginate {
                 text-align: center !important;
                 float: none !important;
                 padding-top: 15px !important;
-                display: flex;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .dataTables_paginate .paginate_button {
-                margin: 2px;
-            }
-
-            /* Length control */
-            .dataTables_length select {
-                margin: 0 5px;
-            }
-        }
-
-        /* Small phone screens */
-        @media (max-width: 375px) {
-            body {
-                font-size: 13px;
-            }
-
-            table.dataTable {
-                font-size: 0.8rem;
-            }
-
-            img {
-                max-width: 60px;
-            }
-
-            h2 {
-                font-size: 1.3rem;
-            }
-        }
-
-        /* Fix for FastClick or touch event issues */
-        .dataTables_paginate .paginate_button {
-            touch-action: manipulation;
-        }
-
-        /* Adjust for the notch on iPhone X and newer */
-        @supports (padding-top: env(safe-area-inset-top)) {
-            body {
-                padding-top: calc(10px + env(safe-area-inset-top));
-                padding-bottom: calc(10px + env(safe-area-inset-bottom));
-                padding-left: calc(10px + env(safe-area-inset-left));
-                padding-right: calc(10px + env(safe-area-inset-right));
             }
         }
     </style>
@@ -267,7 +182,7 @@
     <table id="data-table" class="display responsive nowrap">
         <thead>
             <tr>
-                <th data-priority="1">画像</th>
+                <th data-priority="1" class="image-column">画像</th>
                 <th data-priority="1">タイトル / 住所／交通</th>
                 <th data-priority="2">価格 / 利回り</th>
                 <th data-priority="3">建物/専有面積 / 土地面積</th>
@@ -279,31 +194,18 @@
 
     <script>
         $(document).ready(function() {
-            // Check if touch device
-            const isTouchDevice = 'ontouchstart' in document.documentElement;
+            // Check if device is mobile
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
             
             let data = [];
 
-            // Better handling for mobile viewport adjustments
-            function adjustForMobile() {
-                if ($.fn.dataTable.isDataTable('#data-table')) {
-                    setTimeout(function() {
+            // Handle orientation change for better mobile experience
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    if ($.fn.dataTable.isDataTable('#data-table')) {
                         $('#data-table').DataTable().columns.adjust().responsive.recalc();
-                    }, 300);
-                }
-            }
-
-            // Handle orientation change and resize for better mobile experience
-            window.addEventListener('orientationchange', adjustForMobile);
-            window.addEventListener('resize', adjustForMobile);
-
-            // Fix for iOS virtual keyboard issues
-            $('input, select').on('focus', function() {
-                setTimeout(adjustForMobile, 300);
-            });
-
-            $('input, select').on('blur', function() {
-                setTimeout(adjustForMobile, 300);
+                    }
+                }, 300);
             });
 
             // Fetch data from JSON
@@ -314,91 +216,64 @@
                     populateTable(data);
 
                     // Initialize DataTable with responsive feature
-                    const table = $('#data-table').DataTable({
+                    const tableOptions = {
                         paging: true,
                         searching: true,
                         ordering: true,
-                        pageLength: 8, // Reduced for mobile
-                        scrollX: false, // Disable horizontal scrolling - use responsive instead
-                        autoWidth: false, // Don't auto-calculate width
+                        pageLength: 10,
                         language: {
                             searchPlaceholder: "Search...",
                             search: "",
                             paginate: {
                                 previous: "←",
                                 next: "→"
-                            },
-                            lengthMenu: "Show _MENU_",
-                            info: "Showing _START_ to _END_ of _TOTAL_"
+                            }
                         },
                         responsive: {
                             details: {
-                                display: $.fn.dataTable.Responsive.display.childRowImmediate,
-                                type: 'column',
-                                target: 0
+                                type: isMobile ? 'column' : 'inline',
+                                target: isMobile ? 'tr' : 'td:not(:first-child)'
                             }
                         },
                         columnDefs: [
                             { 
-                                className: 'control',
-                                orderable: false,
+                                responsivePriority: 1, 
+                                targets: [isMobile ? 1 : 0, isMobile ? 0 : 1] 
+                            },
+                            { responsivePriority: 2, targets: 2 },
+                            { responsivePriority: 3, targets: 3 },
+                            { responsivePriority: 4, targets: 4 },
+                            // Hide image column on mobile
+                            {
                                 targets: 0,
-                                width: "80px"
-                            },
-                            { 
-                                responsivePriority: 1,
-                                targets: 1, 
-                                width: "40%" 
-                            },
-                            { 
-                                responsivePriority: 2,
-                                targets: 2, 
-                                width: "15%" 
-                            },
-                            { 
-                                responsivePriority: 3,
-                                targets: 3, 
-                                width: "20%" 
-                            },
-                            { 
-                                responsivePriority: 4,
-                                targets: 4, 
-                                width: "15%" 
+                                visible: !isMobile,
+                                className: 'image-column'
                             }
                         ],
                         dom: '<"top"lf>rt<"bottom"ip><"clear">',
                         drawCallback: function(settings) {
-                            lazyLoadImages();
-                            
-                            // Make pagination more touch-friendly
-                            $('.paginate_button').css('cursor', 'pointer');
-                            
-                            // Check viewport width
-                            const viewportWidth = $(window).width();
-                            
-                            // Force responsive behavior on small screens
-                            if (viewportWidth < 768) {
-                                // Make sure all columns are properly sized
-                                table.columns.adjust().responsive.recalc();
+                            if (!isMobile) {
+                                lazyLoadImages();
                             }
                         }
-                    });
+                    };
+
+                    const table = $('#data-table').DataTable(tableOptions);
 
                     // Reapply lazy loading after table updates (search, paginate, etc.)
-                    table.on('draw', function() {
-                        lazyLoadImages();
-                    });
+                    if (!isMobile) {
+                        table.on('draw', function() {
+                            lazyLoadImages();
+                        });
 
-                    // Handle responsive details open/close
-                    table.on('responsive-display', function() {
-                        lazyLoadImages();
-                    });
+                        // Handle responsive details open/close
+                        table.on('responsive-display', function() {
+                            lazyLoadImages();
+                        });
 
-                    // Initial lazy load trigger
-                    lazyLoadImages();
-                    
-                    // Initial mobile adjustment
-                    adjustForMobile();
+                        // Initial lazy load trigger
+                        lazyLoadImages();
+                    }
                 })
                 .catch(error => console.error('Error loading JSON data:', error));
 
@@ -410,27 +285,22 @@
                 dataToRender.forEach(row => {
                     const tr = $('<tr></tr>');
 
-                    // Image column with lazy loading
-                    const tdImage = $('<td></td>').css('text-align', 'center');
-                    const img = $('<img>')
-                        .attr('src', '') // Set empty initially
-                        .attr('data-src', row.img_sources) // Store actual image URL
-                        .attr('alt', 'Property Image')
-                        .attr('loading', 'lazy') // Native lazy loading
-                        .addClass('lazy-img'); // Class for lazy loading
-                    tdImage.append(img);
+                    // Image column with lazy loading - only create for desktop
+                    const tdImage = $('<td class="image-column"></td>');
+                    if (!isMobile) {
+                        const img = $('<img>')
+                            .attr('src', '') // Set empty initially
+                            .attr('data-src', row.img_sources) // Store actual image URL
+                            .attr('alt', 'Property Image')
+                            .attr('loading', 'lazy') // Native lazy loading
+                            .addClass('lazy-img'); // Class for lazy loading
+                        tdImage.append(img);
+                    }
                     tr.append(tdImage);
 
                     // Description column with link
                     const tdDescription = $('<td></td>');
-                    const descLink = $('<a></a>')
-                        .attr('href', row.url)
-                        .attr('target', '_blank')
-                        .text(row.main_texts)
-                        .css({
-                            'padding': '6px 0',
-                            'display': 'inline-block'
-                        });
+                    const descLink = $('<a></a>').attr('href', row.url).attr('target', '_blank').text(row.main_texts);
                     tdDescription.append(descLink);
                     if (row.address) {
                         tdDescription.append($('<div></div>').text(row.address).css('margin-top', '5px'));
@@ -453,7 +323,7 @@
                 });
             }
 
-            // Lazy load images for visible rows with better error handling
+            // Lazy load images for visible rows - only called on desktop
             function lazyLoadImages() {
                 $('.lazy-img').each(function() {
                     const img = $(this);
@@ -468,27 +338,15 @@
                             img.css('opacity', 1);
                         });
                         
-                        // If image doesn't load in 2 seconds, show it anyway for mobile
+                        // If image doesn't load in 3 seconds, show it anyway
                         setTimeout(function() {
                             if (img.css('opacity') === '0') {
                                 img.css('opacity', 1);
                             }
-                        }, 2000);
+                        }, 3000);
                     }
                 });
             }
-            
-            // Add a simple loading indicator for better UX
-            $('body').append('<div id="loading-indicator" style="text-align: center; margin-top: 20px; display: none;">Loading...</div>');
-            
-            // Show/hide loading indicator
-            $(document).ajaxStart(function() {
-                $('#loading-indicator').show();
-            });
-            
-            $(document).ajaxStop(function() {
-                $('#loading-indicator').hide();
-            });
         });
     </script>
 </body>

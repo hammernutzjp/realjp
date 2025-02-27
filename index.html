@@ -9,12 +9,51 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.3.0/js/dataTables.responsive.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
 
     <style>
         table {
             width: 100%;
             border-collapse: collapse;
         }
+
+        /* Responsive table */
+        @media (max-width: 768px) {
+            table {
+                border: 0;
+            }
+
+            table thead {
+                display: none;
+            }
+
+            table tr {
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            table td {
+                display: block;
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+
+            table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                font-weight: bold;
+            }
+
+            /* Adjust image size for mobile */
+            img {
+                max-width: 80px;
+                height: auto;
+            }
+        }
+
         img {
             max-width: 100px;
             height: auto;
@@ -26,7 +65,7 @@
 </head>
 <body>
     <h2>Demo Site</h2>
-    <table id="data-table" class="display">
+    <table id="data-table" class="display responsive nowrap">
         <thead>
             <tr>
                 <th>画像</th>
@@ -50,7 +89,7 @@
                     data = jsonData;
                     populateTable(data);
 
-                    // Initialize DataTable
+                    // Initialize DataTable with responsive feature
                     const table = $('#data-table').DataTable({
                         paging: true,
                         searching: true,
@@ -58,7 +97,8 @@
                         pageLength: 25, // Set the default number of rows per page
                         language: {
                             searchPlaceholder: "Search..."
-                        }
+                        },
+                        responsive: true // Enable responsive layout
                     });
 
                     // Reapply lazy loading after table updates (search, paginate, etc.)

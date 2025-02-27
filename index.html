@@ -34,17 +34,18 @@
         document.addEventListener("DOMContentLoaded", async function() {
             try {
                 const response = await fetch('kenbiya_tokyo_data.json');
+                if (!response.ok) throw new Error("Failed to load JSON");
                 const data = await response.json();
                 
-            ementById("table-body");
+                if (data.length === 0) return;
+                const tableHead = document.getElementById("table-head");
+                const tableBody = document.getElementById("table-body");
                 
                 // Create table headers
                 const columns = Object.keys(data[0]);
                 columns.forEach(column => {
                     const th = document.createElement("th");
-                    th.t    if (data.length === 0) return;
-                const tableHead = document.getElementById("table-head");
-                const tableBody = document.getElextContent = column;
+                    th.textContent = column;
                     th.setAttribute("data-sort-method", "string");
                     tableHead.appendChild(th);
                 });

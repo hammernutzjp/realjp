@@ -13,53 +13,65 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.3.0/css/responsive.dataTables.min.css">
 
     <style>
+        /* Ensure table and columns maintain alignment */
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        /* Responsive table */
-        @media (max-width: 768px) {
-            table {
-                border: 0;
-            }
-
-            table thead {
-                display: none;
-            }
-
-            table tr {
-                display: block;
-                margin-bottom: 10px;
-            }
-
-            table td {
-                display: block;
-                text-align: right;
-                padding-left: 50%;
-                position: relative;
-            }
-
-            table td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 10px;
-                font-weight: bold;
-            }
-
-            /* Adjust image size for mobile */
-            img {
-                max-width: 80px;
-                height: auto;
-            }
+        /* Fix column alignment */
+        th, td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px;
+            font-size: clamp(10px, 1.2vw, 16px);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
         }
 
+        /* Force DataTables to respect our column widths */
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /* Column width settings */
+        thead th:nth-child(1), tbody td:nth-child(1) { width: 20%; } /* Image */
+        thead th:nth-child(2), tbody td:nth-child(2) { width: 35%; } /* Title / Address */
+        thead th:nth-child(3), tbody td:nth-child(3) { width: 20%; } /* Price / Yield */
+        thead th:nth-child(4), tbody td:nth-child(4) { width: 10%; } /* Size */
+        thead th:nth-child(5), tbody td:nth-child(5) { width: 15%; } /* Age / Floors */
+
+        /* Ensure URLs in column 2 resize properly */
+        td:nth-child(2) a {
+            display: block;
+            font-size: clamp(10px, 1vw, 14px);
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
+
+        /* Responsive images using <picture> */
         img {
             max-width: 100px;
             height: auto;
             display: block;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            th, td {
+                font-size: clamp(8px, 2.5vw, 14px);
+            }
+
+            td:nth-child(2) a {
+                font-size: clamp(8px, 2vw, 12px);
+            }
         }
     </style>
 </head>
@@ -89,19 +101,27 @@
                     data = jsonData;
                     populateTable(data);
 
-                    // Initialize DataTable with responsive feature
+                    // Initialize DataTable with fixed column widths
                     const table = $('#data-table').DataTable({
                         paging: true,
                         searching: true,
                         ordering: true,
-                        pageLength: 25, // Set the default number of rows per page
+                        pageLength: 25,
                         language: {
                             searchPlaceholder: "Search..."
                         },
-                        responsive: true // Enable responsive layout
+                        responsive: true,
+                        autoWidth: false, // Ensures it respects our widths
+                        columnDefs: [
+                            { width: "20%", targets: 0 },
+                            { width: "35%", targets: 1 },
+                            { width: "20%", targets: 2 },
+                            { width: "10%", targets: 3 },
+                            { width: "15%", targets: 4 }
+                        ]
                     });
 
-                    // Reapply lazy loading after table updates (search, paginate, etc.)
+                    // Reapply lazy loading after table updates
                     table.on('draw', function() {
                         lazyLoadImages();
                     });
@@ -114,43 +134,34 @@
             // Populate the table with data
             function populateTable(dataToRender) {
                 const tableBody = $('#table-body');
-                tableBody.empty(); // Clear existing rows
+                tableBody.empty();
 
                 dataToRender.forEach(row => {
                     const tr = $('<tr></tr>');
 
-                    // Image column with lazy loading using <picture> element
+                    // Image column with <picture>
                     const tdImage = $('<td></td>');
-                    const picture = $('<picture></picture>'); // Create picture element
-                    
-                    // Add source for larger screens (min-width: 1000px)
-                    const sourceLarge = $('<source>')
-                        .attr('media', '(min-width: 1000px)')
-                        .attr('srcset', row.img_sources); // Get image URL from JSON
-                    picture.append(sourceLarge);
-
-                    // Add source for smaller screens (max-width: 999px)
-                    const sourceSmall = $('<source>')
-                        .attr('media', '(max-width: 999px)')
-                        .attr('srcset', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==') // Base64 encoded placeholder
-                        .attr('sizes', '100%'); // Ensure it takes 100% of the container width
-                    picture.append(sourceSmall);
-
-                    // Default image (fallback for browsers that don't support <picture>)
+                    const picture = $('<picture></picture>');
+                    const sourceLarge = $('<source>').attr('media', '(min-width: 1000px)').attr('srcset', row.img_sources);
+                    const sourcePlaceholder = $('<source>').attr('media', '(max-width: 999px)')
+                        .attr('srcset', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==')
+                        .attr('sizes', '100%');
                     const img = $('<img>')
-                        .attr('src', '') // Set empty initially
-                        .attr('data-src', row.img_sources) // Store actual image URL for large screens
+                        .attr('src', '') // Empty initially for lazy loading
+                        .attr('data-src', row.img_sources)
                         .attr('alt', 'Property Image')
-                        .attr('loading', 'lazy') // Native lazy loading
-                        .addClass('lazy-img'); // Class for lazy loading
-                    
-                    picture.append(img);
+                        .attr('loading', 'lazy')
+                        .addClass('lazy-img');
+                    picture.append(sourceLarge, sourcePlaceholder, img);
                     tdImage.append(picture);
                     tr.append(tdImage);
 
-                    // Description column with link
+                    // Description column
                     const tdDescription = $('<td></td>');
-                    const descLink = $('<a></a>').attr('href', row.url).attr('target', '_blank').text(row.main_texts);
+                    const descLink = $('<a></a>')
+                        .attr('href', row.url)
+                        .attr('target', '_blank')
+                        .text(row.main_texts);
                     tdDescription.append(descLink);
                     tr.append(tdDescription);
 
@@ -170,7 +181,7 @@
                 });
             }
 
-            // Lazy load images for visible rows
+            // Lazy load images
             function lazyLoadImages() {
                 $('.lazy-img').each(function() {
                     const img = $(this);
